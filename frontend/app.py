@@ -24,15 +24,24 @@ def index():
             target = f'{BACKEND_HOST}:{BACKEND_PORT}'
             print(f"Connecting to backend at {target}")
             
-            with grpc.insecure_channel(target) as channel:
-                stub = tempconv_pb2_grpc.TempConvServiceStub(channel)
+            if BACKEND_PORT == '443':
+                # Use secure channel for Cloud Run (HTTPS)
+                print(f"Using secure channel to {target}")
+                creds = grpc.ssl_channel_credentials()
+                channel = grpc.secure_channel(target, creds)
+            else:
+                # Use insecure channel for local/internal
+                print(f"Using insecure channel to {target}")
+                channel = grpc.insecure_channel(target)
+            
+            stub = tempconv_pb2_grpc.TempConvServiceStub(channel)
                 
-                if conversion_type == 'c2f':
-                    response = stub.CelsiusToFahrenheit(tempconv_pb2.TempRequest(value=temp_val))
-                    result = f"{temp_val}°C = {response.value:.2f}°F"
-                else:
-                    response = stub.FahrenheitToCelsius(tempconv_pb2.TempRequest(value=temp_val))
-                    result = f"{temp_val}°F = {response.value:.2f}°C"
+            if conversion_type == 'c2f':
+                response = stub.CelsiusToFahrenheit(tempconv_pb2.TempRequest(value=temp_val))
+                result = f"{temp_val}°C = {response.value:.2f}°F"
+            else:
+                response = stub.FahrenheitToCelsius(tempconv_pb2.TempRequest(value=temp_val))
+                result = f"{temp_val}°F = {response.value:.2f}°C"
         except Exception as e:
             result = f"Error: {e}"
                 

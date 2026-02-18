@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from protos import tempconv_pb2 as protos_dot_tempconv__pb2
+import tempconv_pb2 as protos_dot_tempconv__pb2
 
 GRPC_GENERATED_VERSION = '1.78.0'
 GRPC_VERSION = grpc.__version__
